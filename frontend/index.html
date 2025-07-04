@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NixFunds | Modern Finance Tracker</title>
+    <link rel="stylesheet" href="/frontend/css/styles.css" />
+    <script src="/frontend/js/app.js" defer></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+  </head>
+  <body>
+    <div class="app-container">
+      <header>
+        <div style="display: flex; align-items: center; gap: 1rem">
+          <button
+            id="theme-toggle"
+            class="theme-toggle"
+            aria-label="Toggle dark mode"
+          >
+            <i class="fas fa-moon"></i>
+          </button>
+          <div class="logo">
+            <i class="fas fa-chart-line"></i>
+            <span>NixFunds</span>
+          </div>
+        </div>
+        <nav>
+          <button class="btn btn-primary" id="add-transaction-btn">
+            <i class="fas fa-plus"></i> New Transaction
+          </button>
+        </nav>
+      </header>
+
+      <main>
+        <section class="stats-container">
+          <!-- Stats cards will be inserted here by JS -->
+        </section>
+
+        <section class="transaction-section">
+          <div class="section-header">
+            <h2>Recent Transactions</h2>
+            <div class="filter-controls">
+              <select id="filter-type" class="form-select">
+                <option value="all">All Transactions</option>
+                <option value="income">Income</option>
+                <option value="expense">Expenses</option>
+              </select>
+            </div>
+          </div>
+          <div class="transactions-list" id="transactions-list">
+            <!-- Transactions will be inserted here by JS -->
+          </div>
+        </section>
+      </main>
+
+      <!-- Transaction Modal -->
+      <div class="modal" id="transaction-modal">
+        <div class="modal-content">
+          <span class="close-modal">&times;</span>
+          <h3>Add New Transaction</h3>
+          <form id="transaction-form" autocomplete="off">
+            <!-- Form fields will be inserted here by JS -->
+          </form>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
