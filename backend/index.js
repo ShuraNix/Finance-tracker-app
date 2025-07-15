@@ -3,6 +3,8 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 import cors from "cors"; // 👈 Added CORS support
 import transactionRoutes from "./routes/transactionRoutes.js";
+import authRoutes from "./routes/authRoutes.js";
+import errorHandler from "./middleware/errorHandler.js";
 
 const app = express();
 dotenv.config();
@@ -29,6 +31,7 @@ mongoose.connect(MONGOURL)
 
 // Routes
 app.use("/api/transactions", transactionRoutes);
+app.use("/api/auth", authRoutes);
 
 // Test route
 app.get("/", (req, res) => {
@@ -39,3 +42,6 @@ app.get("/", (req, res) => {
 app.use((req, res) => {
   res.status(404).json({ message: "Route not found" });
 });
+
+// Centralized error handler
+app.use(errorHandler);

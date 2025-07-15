@@ -96,3 +96,41 @@ frontend/
 ---
 
 **Enjoy tracking your finances!**
+
+---
+
+## 🚀 Deployment & Environment
+
+### Environment Variables
+
+Create a `.env` file in `/backend` with:
+
+```
+PORT=8000
+MONGO_URL="mongodb://localhost:27017/finance-tracker"
+JWT_SECRET="your_strong_secret_here"
+```
+
+- **Never commit your real .env to git.**
+- Add a `.env.example` file for reference (no secrets).
+
+### Production Deployment
+
+- Use a process manager like PM2 or Docker for backend.
+- Serve the frontend with a static server (e.g., Nginx, Vercel, Netlify, or GitHub Pages).
+- Set `NODE_ENV=production` in your environment.
+- Use a strong, unique `JWT_SECRET` in production.
+- Secure your MongoDB instance (do not expose to the public internet).
+
+### Security & Best Practices
+
+- Rate limiting and input validation are enabled on auth and transaction routes.
+- All secrets and sensitive config should be in `.env`.
+- Use HTTPS in production.
+
+### Final Touches
+
+- Favicon included (`/frontend/assets/favicon.png`). Replace with your own for branding.
+- Accessibility: Improved ARIA, color contrast, and keyboard navigation for a11y compliance.
+
+---

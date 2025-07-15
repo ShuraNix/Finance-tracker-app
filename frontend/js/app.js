@@ -1,160 +1,101 @@
-class NixFundsApp {
+/**
+ * Main entry point for NixFunds frontend app.
+ * Orchestrates all modules and manages global state.
+ *
+ * @module App
+ */
+/**
+ * ThemeManager handles dark mode toggling and persistence.
+ */
+class ThemeManager {
   constructor() {
-    this.API_URL = 'http://localhost:8000/api/transactions';
-    this.state = { transactions: [], filter: 'all' };
     this.DOM = {
-      addBtn: document.querySelector('#add-transaction-btn'),
-      modal: document.querySelector('#transaction-modal'),
-      closeBtn: document.querySelector('.close-modal'),
-      form: document.querySelector('#transaction-form'),
-      list: document.querySelector('#transactions-list'),
-      stats: document.querySelector('.stats-container'),
-      filter: document.querySelector('#filter-type'),
-      themeToggle: document.querySelector('#theme-toggle'),
+      themeToggle: document.getElementById('theme-toggle'),
       themeIcon: document.querySelector('#theme-toggle i')
     };
-    this.init();
   }
-
-  // --- Theme ---
-  setTheme(dark) {
-    document.body.classList.toggle('dark-mode', dark);
-    this.DOM.themeIcon.className = dark ? 'fas fa-sun' : 'fas fa-moon';
-    localStorage.setItem('theme', dark ? 'dark' : 'light');
-  }
-  initTheme() {
+  init() {
     this.setTheme(localStorage.getItem('theme') === 'dark');
     this.DOM.themeToggle.onclick = () =>
       this.setTheme(!document.body.classList.contains('dark-mode'));
   }
-
-  // --- Modal ---
-  openModal() {
-    this.DOM.modal.style.display = 'flex';
-    this.renderForm();
-  }
-  closeModal() {
-    this.DOM.modal.style.display = 'none';
-    this.DOM.form.reset();
-  }
-
-  // --- Form ---
-  renderForm() {
-    this.DOM.form.innerHTML = `
-      <div class="form-group">
-        <label class="form-label" for="description">Description</label>
-        <input class="form-control" id="description" autocomplete="off" required>
-      </div>
-      <div class="form-group">
-        <label class="form-label" for="amount">Amount</label>
-        <input class="form-control" id="amount" type="number" step="0.01" autocomplete="off" required>
-      </div>
-      <div class="form-group">
-        <label class="form-label" for="category">Category</label>
-        <input class="form-control" id="category" autocomplete="off" required>
-      </div>
-      <div class="form-group">
-        <label class="form-label" for="type">Type</label>
-        <select class="form-control" id="type" required>
-          <option value="income">Income</option>
-          <option value="expense">Expense</option>
-        </select>
-      </div>
-      <button class="btn btn-primary" type="submit">Add Transaction</button>
-    `;
-  }
-
-  // --- Transactions ---
-  renderTransactions() {
-    const txs = this.state.transactions.filter(
-      t => this.state.filter === 'all' || t.type === this.state.filter
-    );
-    this.DOM.list.innerHTML = txs.length
-      ? txs.map(t => `
-        <div class="transaction-item transaction-${t.type}">
-          <div class="transaction-info">
-            <h4>${t.description}</h4>
-            <p>${t.category}</p>
-          </div>
-          <div class="transaction-amount">€${t.amount.toFixed(2)}</div>
-        </div>
-      `).join('')
-      : `<p style="text-align:center;color:var(--gray)">No transactions yet.</p>`;
-  }
-
-  renderStats() {
-    const income = this.state.transactions.filter(t => t.type === 'income').reduce((a, t) => a + t.amount, 0);
-    const expense = this.state.transactions.filter(t => t.type === 'expense').reduce((a, t) => a + t.amount, 0);
-    const balance = income - expense;
-    this.DOM.stats.innerHTML = `
-      <div class="stat-card">
-        <h3>Total Balance</h3>
-        <h2>€${balance.toFixed(2)}</h2>
-      </div>
-      <div class="stat-card">
-        <h3>Income</h3>
-        <h2 style="color:var(--success)">€${income.toFixed(2)}</h2>
-      </div>
-      <div class="stat-card">
-        <h3>Expenses</h3>
-        <h2 style="color:var(--danger)">€${expense.toFixed(2)}</h2>
-      </div>
-    `;
-  }
-
-  // --- API ---
-  async fetchTransactions() {
-    try {
-      const res = await fetch(this.API_URL);
-      this.state.transactions = res.ok ? await res.json() : [];
-    } catch {
-      this.state.transactions = [];
+  setTheme(dark) {
+    document.body.classList.toggle('dark-mode', dark);
+    if (this.DOM.themeIcon) {
+      this.DOM.themeIcon.className = dark ? 'fas fa-sun' : 'fas fa-moon';
     }
-    this.renderTransactions();
-    this.renderStats();
+    localStorage.setItem('theme', dark ? 'dark' : 'light');
+  }
+}
+
+/**
+ * ToastManager handles toast notifications for user feedback.
+ */
+export class ToastManager {
+  constructor() {
+    this.toast = null;
+    this.timeout = null;
+    this.createToastElement();
+  }
+  createToastElement() {
+    this.toast = document.createElement('div');
+    this.toast.className = 'toast';
+    document.body.appendChild(this.toast);
+  }
+  show(message, type = 'success', duration = 3000) {
+    this.toast.textContent = message;
+    this.toast.className = `toast show toast-${type}`;
+    clearTimeout(this.timeout);
+    this.timeout = setTimeout(() => this.hide(), duration);
+  }
+  hide() {
+    this.toast.className = 'toast';
+  }
+}
+
+import { ModalManager } from './ModalManager.js';
+import { TransactionService } from './TransactionService.js';
+import { AuthService } from './AuthService.js';
+import { TransactionList } from './TransactionList.js';
+import { StatsPanel } from './StatsPanel.js';
+import { PieChart } from './PieChart.js';
+
+class App {
+  /**
+   * Initializes the NixFunds App and all modules.
+   */
+  constructor() {
+    this.themeManager = new ThemeManager();
+    this.toastManager = new ToastManager();
+    window.toastManager = this.toastManager; // Make globally accessible
+    this.modalManager = new ModalManager();
+    this.transactionService = new TransactionService();
+    this.statsPanel = new StatsPanel(this.transactionService);
+    this.pieChart = new PieChart(this.transactionService);
+    this.authService = new AuthService(this.modalManager);
+    // Pass statsPanel and pieChart to TransactionList for coordinated UI updates
+    this.transactionList = new TransactionList(
+      this.transactionService,
+      this.modalManager,
+      this.statsPanel,
+      this.pieChart
+    );
+    this.init();
   }
 
-  async handleFormSubmit(e) {
-    e.preventDefault();
-    const tx = {
-      description: this.DOM.form.querySelector('#description').value,
-      amount: parseFloat(this.DOM.form.querySelector('#amount').value),
-      category: this.DOM.form.querySelector('#category').value,
-      type: this.DOM.form.querySelector('#type').value
-    };
-    try {
-      const res = await fetch(this.API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(tx)
-      });
-      if (res.ok) {
-        this.closeModal();
-        this.fetchTransactions();
-      }
-    } catch {}
-  }
-
-  // --- Events ---
-  setupEvents() {
-    this.DOM.addBtn.onclick = () => this.openModal();
-    this.DOM.closeBtn.onclick = () => this.closeModal();
-    window.onclick = e => { if (e.target === this.DOM.modal) this.closeModal(); };
-    this.DOM.form.onsubmit = e => this.handleFormSubmit(e);
-    this.DOM.filter.onchange = e => {
-      this.state.filter = e.target.value;
-      this.renderTransactions();
-    };
-  }
-
-  // --- Init ---
+  /**
+   * Sets up event listeners and initial UI state.
+   */
   init() {
     document.addEventListener('DOMContentLoaded', () => {
-      this.setupEvents();
-      this.fetchTransactions();
-      this.initTheme();
+      this.themeManager.init();
+      this.authService.init();
+      this.transactionList.init();
+      this.statsPanel.init();
+      this.pieChart.init();
+      this.modalManager.init();
     });
   }
 }
 
-new NixFundsApp();
+new App();
