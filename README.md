@@ -10,13 +10,16 @@ A modern, full-stack finance tracker to manage your income and expenses with eas
   Defines what a transaction looks like (the schema) using Mongoose.
 
 - **routes/transactionRoutes.js**  
-  Handles API requests for transactions (add/get).
+  Handles API requests for transactions (add/get/update/delete).
+
+- **routes/authRoutes.js**  
+  Handles authentication (signup/login) with strong password policy and rate limiting.
 
 - **index.js**  
   Main server file. Connects to MongoDB, sets up Express, loads routes, and starts the server.
 
 - **.env**  
-  Stores your database connection string and environment variables.
+  Stores your database connection string and environment variables (see below).
 
 **How it works:**
 
@@ -58,19 +61,23 @@ A modern, full-stack finance tracker to manage your income and expenses with eas
    ```
    PORT=8000
    MONGO_URL="mongodb://localhost:27017/finance-tracker"
+   JWT_SECRET="your_strong_secret_here"
    ```
 4. **Start the backend server**  
    `npm start`
-5. **Open `frontend/index.html` in your browser**
+5. **Open `frontend/index.html` in your browser`**
 
 ---
 
 ## 📝 Features
 
-- Add and view transactions (income/expense)
-- Filter transactions by type
+- Add, view, edit, and delete transactions (income/expense)
+- Filter transactions by type, month, and year
 - See total balance, income, and expenses
 - Responsive design and dark mode toggle
+- Strong password policy (min 8 chars, upper/lower/digit/special)
+- Rate limiting and input validation for security
+- Toast notifications for user feedback
 
 ---
 
@@ -80,8 +87,13 @@ A modern, full-stack finance tracker to manage your income and expenses with eas
 backend/
   models/
     transaction.js
+    user.js
   routes/
     transactionRoutes.js
+    authRoutes.js
+  middleware/
+    auth.js
+    errorHandler.js
   index.js
   .env
 
@@ -91,6 +103,7 @@ frontend/
     styles.css
   js/
     app.js
+    ...
 ```
 
 ---
@@ -124,6 +137,7 @@ JWT_SECRET="your_strong_secret_here"
 
 ### Security & Best Practices
 
+- Strong password policy enforced on signup.
 - Rate limiting and input validation are enabled on auth and transaction routes.
 - All secrets and sensitive config should be in `.env`.
 - Use HTTPS in production.
